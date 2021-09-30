@@ -1,4 +1,4 @@
-<html lang="en" style="">
+<html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta name='viewport' content='maximum-scale=1, width=device-width, user-scalable=no, minimum-scale=1.0'/>
@@ -16,7 +16,8 @@
 			position: relative;
 			display: flex;
 			flex-direction: column;
-			min-height: -webkit-fill-available;
+			/* min-height: -webkit-fill-available; */
+			height: 100%;
 		}
 		body.scroll{
 			height: auto;
@@ -46,11 +47,24 @@
 			padding-bottom: 56px;
 		}
 		.content{
+			position: relative;
 			width: 100%;
 			height: 200vh;
 			padding: 20px;
 			background: linear-gradient(to bottom, #eef2f3, #8e9eab);
 			border: #c6cfd5 solid 3px;
+		}
+		.content:after{
+			content: 'CONTENT BOTTOM';
+			display: block;
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			line-height: 20px;
+			text-align: center;
+			color: #fff;
+			background: #3f51b5;
 		}
 		.footer{
 			position: fixed;
@@ -74,8 +88,48 @@
 			cursor: pointer;
 		}
 	</style>
+	<script>
+		function init(){
+		        console.log("init");
+		        checkHeight();
+		        window.addEventListener("orientationchange", checkHeight);
+		}
+
+		function checkHeight(){
+	
+			if(!is_ios15_safari()) return;
+		
+			var ori = Math.abs(window.orientation);
+		    	if(ori=="0"){
+    	
+		    		chgHeight("100vh");
+    		
+		    	}else if(ori=="90"){
+    	
+    				chgHeight(window.innerHeight+"px");
+    		
+    			}
+		}
+
+		function chgHeight(h){
+	    		console.log("chgHeight : "+Math.abs(window.orientation));    
+    			var obj = document.getElementsByTagName("html")[0];
+	    		obj.style.height = h;
+		}
+
+		function is_ios15_safari(){
+			var agent = navigator.userAgent;
+			if(agent.indexOf("iPhone OS 15_0")!=-1){
+				if(agent.indexOf("CriOS")==-1 && agent.indexOf("FxiOS")==-1 && agent.indexOf("QQ")==-1){
+					return true;	
+				}
+			}
+			return false;	
+		}
+
+	</script>
 </head>
-<body class="" style="height: 100%;">
+<body class="" style="height: 100%;" onscroll="checkHeight();">
   	<header>HEADER</header>
 	<div id="wrap" class="wrap">
 		<div class="content">
@@ -84,49 +138,24 @@
 				<input type="password">
 			</form>
 			<h3 id="console"></h3>
+			<span id="show_num">0</span>
 			<h3>HTML Height: <span id="html_height">---</span> px</h3>
 			<h3>innerHeight: <span id="innerHeight">---</span> px</h3>
 			<h3>clientHeight: <span id="clientHeight">---</span> px</h3>
 
 			<button id="show_height">show height</button>
+			<button id="reset_height">ios15 reset height</button>
 
-<!--
-			<h3>mata - viewport-fit : <span id="viewport_now"></span></h3>
-			<button id="viewport_auto">auto</button>
-			<button id="viewport_cover">cover</button>
-			<br><br>
--->
 			<h3>html - height : <span id="height_now"></span></h3>
 			<button id="height_percent">100%</button>
 			<button id="height_vh">100vh</button>
-<!--
-			<button id="height_calc">100vh-safe</button>
-			<button id="height_fill">fill-available</button>
-			<button id="height_inner">innerHeight</button>
--->
-			<br><br>
-<!--
-			<h3>html - min-height : <span id="minHeight_now"></span></h3>
-			<button id="minHeight_unset">unset</button>
-			<button id="minHeight_fill">fill-available</button>
-			<br><br>
 
-			<h3>body - height : <span id="bd_height_now"></span></h3>
-			<button id="bd_height_percent">100%</button>
-			<button id="bd_height_vh">100vh</button>
-			<button id="bd_height_calc">100vh-safe</button>
 			<br><br>
--->
 
 			<h3>scroll : <span id="scroll_now"></span></h3>
 			<button id="scroll_content">content</button>
 			<button id="scroll_body">body</button>
 			<br><br>
-<!--
-			<h3>footer - padding : <span id="footer_now"></span></h3>
-			<button id="footer_0">0</button>
-			<button id="footer_safe">safe-area</button>
--->
 		</div>
 	</div>
 	<div id="footer" class="footer">FOTTER</div>
@@ -134,23 +163,21 @@
 
 	<script>
 		var vp = 'maximum-scale=1, width=device-width, user-scalable=no, minimum-scale=1.0';
+		var num = 0;
 
 		function showHeight() {
+			init();
 			document.getElementById('html_height').innerHTML = document.documentElement.offsetHeight;
 			document.getElementById('innerHeight').innerHTML = window.innerHeight;
 			document.getElementById('clientHeight').innerHTML = document.documentElement.clientHeight;
-
-			console.log('456');
+			num = num+1;
+			document.getElementById('show_num').innerHTML = num;
 		}
 		window.onload = showHeight;
 
 		/* RESIZE */
 		function reportWindowSize() {
-			console.log('test');
-			document.documentElement.style.height = window.innerHeight;
-			document.getElementById('html_height').innerHTML = document.documentElement.offsetHeight;
-			document.getElementById('innerHeight').innerHTML = window.innerHeight;
-			document.getElementById('clientHeight').innerHTML = document.documentElement.clientHeight;
+			showHeight();
 		}
 		window.onresize = reportWindowSize;
 
@@ -162,127 +189,60 @@
 		}, true);
 
 		form.addEventListener('blur', (event) => {
+			/*
 			document.documentElement.style.height = '100vh';
-			var tt = document.documentElement.innerHeight;
+			var tt = window.innerHeight;
+			//document.getElementById('show_tt').innerHTML = tt;
 			setTimeout(function(){
 				document.documentElement.style.height = tt;
 			}, 500);
-
+			*/
+			showHeight();
 		}, true);
 
-		/* META */
-		/*
-		document.getElementById("viewport_auto").onclick = function() {viewportAuto()};
-		function viewportAuto() {
-			document.querySelector('meta[name="viewport"]').setAttribute("content", 'viewport-fit=auto,' + vp);
-			document.getElementById('viewport_now').innerHTML = 'auto';
+		/* RESET HEIGHT */
+		document.getElementById("reset_height").onclick = function() {resetHeight()};
+		function resetHeight() {
+			showHeight();
+			document.documentElement.style.height = '100vh';
+			var tt = document.documentElement.clientHeight;
+			//document.getElementById('show_tt').innerHTML = tt;
+			setTimeout(function(){
+				document.documentElement.style.height = tt;
+			}, 500);
+			showHeight();
 		}
-		document.getElementById("viewport_cover").onclick = function() {viewportCover()};
-		function viewportCover() {
-			document.querySelector('meta[name="viewport"]').setAttribute("content", 'viewport-fit=cover,' + vp);
-			document.getElementById('viewport_now').innerHTML = 'cover';
-		}
-		*/
+
+		document.getElementById("show_height").onclick = showHeight;
 
 		/* HTML - height */
 		document.getElementById("height_percent").onclick = function() {heightPercent()};
 		function heightPercent() {
 			document.documentElement.style.height = '100%';
 			document.getElementById('height_now').innerHTML = '100%';
-			document.getElementById('html_height').innerHTML = document.documentElement.offsetHeight;
+			showHeight();
 		}
 		document.getElementById("height_vh").onclick = function() {heightVH()};
 		function heightVH() {
 			document.documentElement.style.height = '100vh';
 			document.getElementById('height_now').innerHTML = '100vh';
-			document.getElementById('html_height').innerHTML = document.documentElement.offsetHeight;
+			showHeight();
 		}
-		/*
-		document.getElementById("height_calc").onclick = function() {heightCALC()};
-		function heightCALC() {
-			document.documentElement.style.height = 'calc(100vh - env(safe-area-inset-bottom))';
-			document.getElementById('height_now').innerHTML = '100vh - safe-area';
-			document.getElementById('html_height').innerHTML = document.documentElement.offsetHeight;
-		}
-		document.getElementById("height_fill").onclick = function() {heightFILL()};
-		function heightFILL() {
-			document.documentElement.style.height = '-webkit-fill-available';
-			document.getElementById('height_now').innerHTML = 'fill-available';
-			document.getElementById('html_height').innerHTML = document.documentElement.offsetHeight;
-		}
-		document.getElementById("height_inner").onclick = function() {heightINNER()};
-		function heightINNER() {
-			document.documentElement.style.height = window.innerHeight;
-			document.getElementById('height_now').innerHTML = 'innerHeight';
-			document.getElementById('html_height').innerHTML = document.documentElement.offsetHeight;
-		}
-		*/
-
-		/* HTML - min-height */
-		/*
-		document.getElementById("minHeight_unset").onclick = function() {minHeightUnset()};
-		function minHeightUnset() {
-			document.documentElement.style.minHeight = 'unset';
-			document.getElementById('minHeight_now').innerHTML = 'unset';
-		}
-		document.getElementById("minHeight_fill").onclick = function() {minHeightFill()};
-		function minHeightFill() {
-			document.documentElement.style.minHeight = '-webkit-fill-available';
-			document.getElementById('minHeight_now').innerHTML = 'fill-available';
-		}
-		*/
-
-		/* BODY - height */
-		/*
-		document.getElementById("bd_height_percent").onclick = function() {bdHeightPercent()};
-		function bdHeightPercent() {
-			document.body.style.height = '100%';
-			document.getElementById('bd_height_now').innerHTML = '100%';
-		}
-		document.getElementById("bd_height_vh").onclick = function() {bdHeightVH()};
-		function bdHeightVH() {
-			document.body.style.height = '100vh';
-			document.getElementById('bd_height_now').innerHTML = '100vh';
-		}
-		document.getElementById("bd_height_calc").onclick = function() {bdHeightCALC()};
-		function bdHeightCALC() {
-			document.body.style.height = 'calc(100vh - env(safe-area-inset-bottom))';
-			document.getElementById('bd_height_now').innerHTML = '100vh - safe-area';
-		}
-		*/
 
 		/* SCROLL */
 		document.getElementById("scroll_content").onclick = function() {scrollContent()};
 		function scrollContent() {
 			document.body.className = "";
 			document.getElementById('scroll_now').innerHTML = 'content';
+			showHeight();
 		}
 		document.getElementById("scroll_body").onclick = function() {scrollBody()};
 		function scrollBody() {
 			document.body.className += "scroll";
 			document.getElementById('scroll_now').innerHTML = 'body';
+			showHeight();
 		}
 
-		/* FOOTER - padding */
-		/*
-		document.getElementById("footer_0").onclick = function() {marginZero()};
-		function marginZero() {
-			document.getElementById('footer').style.paddingBottom = '0px';
-			document.getElementById('footer_now').innerHTML = '0';
-		}
-		document.getElementById("footer_safe").onclick = function() {marginSafe()};
-		function marginSafe() {
-			document.getElementById('footer').style.paddingBottom = 'env(safe-area-inset-bottom)';
-			document.getElementById('footer_now').innerHTML = 'env(safe-area-inset-bottom)';
-
-			if(document.getElementById('scroll_now').innerHTML == 'body'){
-				document.getElementById('wrap').style.paddingBottom = 'calc(56px + env(safe-area-inset-bottom))';
-			}
-			else{
-
-			}
-		}
-		*/
 	</script>
 
 
